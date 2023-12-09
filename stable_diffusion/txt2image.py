@@ -15,15 +15,16 @@ if __name__ == "__main__":
     )
     parser.add_argument("prompt")
     parser.add_argument("--n_images", type=int, default=4)
-    parser.add_argument("--steps", type=int, default=50)
+    parser.add_argument("--steps", type=int, default=4)
     parser.add_argument("--cfg", type=float, default=7.5)
     parser.add_argument("--negative_prompt", default="")
     parser.add_argument("--n_rows", type=int, default=1)
     parser.add_argument("--decoding_batch_size", type=int, default=1)
     parser.add_argument("--output", default="out.png")
+    parser.add_argument("--model", default="stabilityai/sd-turbo")
     args = parser.parse_args()
 
-    sd = StableDiffusion()
+    sd = StableDiffusion(model=args.model)
 
     # Generate the latent vectors using diffusion
     latents = sd.generate_latents(

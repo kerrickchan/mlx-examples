@@ -17,7 +17,7 @@ from .unet import UNetModel
 from .vae import Autoencoder
 
 
-_DEFAULT_MODEL = "stabilityai/stable-diffusion-2-1-base"
+_DEFAULT_MODEL = "stabilityai/sd-turbo"
 _MODELS = {
     # See https://huggingface.co/stabilityai/stable-diffusion-2-1-base for the model details and license
     "stabilityai/stable-diffusion-2-1-base": {
@@ -30,7 +30,18 @@ _MODELS = {
         "diffusion_config": "scheduler/scheduler_config.json",
         "tokenizer_vocab": "tokenizer/vocab.json",
         "tokenizer_merges": "tokenizer/merges.txt",
-    }
+    },
+    "stabilityai/sd-turbo": {
+        "unet_config": "unet/config.json",
+        "unet": "unet/diffusion_pytorch_model.safetensors",
+        "text_encoder_config": "text_encoder/config.json",
+        "text_encoder": "text_encoder/model.safetensors",
+        "vae_config": "vae/config.json",
+        "vae": "vae/diffusion_pytorch_model.safetensors",
+        "diffusion_config": "scheduler/scheduler_config.json",
+        "tokenizer_vocab": "tokenizer/vocab.json",
+        "tokenizer_merges": "tokenizer/merges.txt",
+    },
 }
 
 
