@@ -2,10 +2,11 @@
 
 import io
 import itertools
-import numpy as np
 import os
-from urllib import request
 import zipfile
+from urllib import request
+
+import numpy as np
 
 
 def load_dataset(dataname):
@@ -42,7 +43,7 @@ def wikitext(dataset="2", save_dir="/tmp"):
     Load the WikiText-* language modeling dataset:
         https://paperswithcode.com/dataset/wikitext-2
         https://paperswithcode.com/dataset/wikitext-103
-        
+
     """
     if dataset not in ("2", "103"):
         raise ValueError(f'Dataset must be either "2" or "103", got {dataset}')
