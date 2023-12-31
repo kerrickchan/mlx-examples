@@ -1,11 +1,11 @@
 # Copyright © 2023 Apple Inc.
 
-import mlx.core as mx
-import numpy as np
 import sys
 from typing import Optional, Tuple, Union
-import tqdm
 
+import mlx.core as mx
+import numpy as np
+import tqdm
 
 from .audio import (
     FRAMES_PER_SECOND,
@@ -40,20 +40,20 @@ def _format_timestamp(seconds: float):
 
 class ModelHolder:
     model = None
-    model_name = None
+    model_path = None
 
     @classmethod
-    def get_model(cls, model: str):
-        if cls.model is None or model != cls.model_name:
-            cls.model = load_model(model)
-            cls.model_name = model
+    def get_model(cls, model_path: str, dtype: mx.Dtype):
+        if cls.model is None or model_path != cls.model_path:
+            cls.model = load_model(model_path, dtype=dtype)
+            cls.model_path = model_path
         return cls.model
 
 
 def transcribe(
     audio: Union[str, np.ndarray, mx.array],
     *,
-    model: str = "tiny",
+    model_path: str = "mlx_models/tiny",
     verbose: Optional[bool] = None,
     temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
     compression_ratio_threshold: Optional[float] = 2.4,
@@ -73,9 +73,8 @@ def transcribe(
     audio: Union[str, np.ndarray, mx.array]
         The path to the audio file to open, or the audio waveform
 
-    model: str
-        The Whisper model. Can be any of ["tiny", "base", "small", "medium", "large"].
-        Default is "tiny".
+    model_path: str
+        The path to the Whisper model that has been converted to MLX format.
 
     verbose: bool
         Whether to display the text being decoded to the console. If True, displays all the details,
@@ -114,12 +113,11 @@ def transcribe(
     the spoken language ("language"), which is detected when `decode_options["language"]` is None.
     """
 
-    model = ModelHolder.get_model(model)
-
-    dtype = mx.float16 if decode_options.get("fp16", False) else mx.float32
+    dtype = mx.float16 if decode_options.get("fp16", True) else mx.float32
+    model = ModelHolder.get_model(model_path, dtype)
 
     # Pad 30-seconds of silence to the input audio, for slicing
-    mel = log_mel_spectrogram(audio, padding=N_SAMPLES)
+    mel = log_mel_spectrogram(audio, n_mels=model.dims.n_mels, padding=N_SAMPLES)
     content_frames = mel.shape[-2] - N_FRAMES
 
     if verbose:
@@ -150,7 +148,12 @@ def transcribe(
 
     language: str = decode_options["language"]
     task: str = decode_options.get("task", "transcribe")
-    tokenizer = get_tokenizer(model.is_multilingual, language=language, task=task)
+    tokenizer = get_tokenizer(
+        model.is_multilingual,
+        num_languages=model.num_languages,
+        language=language,
+        task=task,
+    )
 
     def decode_with_fallback(segment: mx.array) -> DecodingResult:
         temperatures = (
